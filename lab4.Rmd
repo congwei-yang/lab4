@@ -51,8 +51,15 @@ Create a bar plot of the number of ballot received by ballot send date.
 
 See `images/visualizaiton_1.png`.
 
-```{r visualizaiton_1}
+```{r}
+glimpse(absentee)
+```
 
+
+```{r visualizaiton_1}
+library(ggplot2)
+ggplot(data = absentee, aes(x = ballot_send_dt)) + 
+  geom_bar()
 ```
 
 Create a bar plot showing the number of ballots received on 09/04/2020 by 
@@ -62,7 +69,15 @@ ballots received on 09/04/2020.
 See `images/visualizaiton_2.png`.
 
 ```{r visualizaiton_2}
+absentee_2 = 
+  absentee %>% 
+  filter(ballot_send_dt == "09/04/2020") %>% 
+  count(county_desc) %>% 
+  arrange(n) %>% 
+  slice(1:20)
 
+ggplot(data = absentee_2, aes(x = n, y = reorder(county_desc, n))) + 
+  geom_bar(stat = "identity")
 ```
 
 Create a histogram based on the proportion of accepted ballots on a per
@@ -71,8 +86,29 @@ county basis.
 See `images/visualizaiton_3.png`.
 
 ```{r visualizaiton_3}
-
+absentee_3 = 
+  absentee %>% 
+  group_by(county_desc) %>% 
+  count(ballot_rtn_status) %>% 
+  pivot_wider(names_from = ballot_rtn_status, values_from = n) %>% 
+  mutate(total = sum())
+absentee_3
 ```
+
+```{r}
+absentee_4 = 
+  absentee %>% 
+  count(county_desc)
+
+absentee_4 = mutate(absentee_4, proportion = absentee_3$ACCEPTED / absentee_4$n)
+absentee_4
+```
+
+```{r}
+ggplot(data = absentee_4, aes(x = proportion)) + 
+  geom_histogram(binwidth = 0.02)
+```
+
 
 Create comparison box plots based on the age of absentee/mail-in voters
 from the parties "DEM", "REP", "UNA" broken down by race.
